@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -30,11 +32,11 @@ public class NewsService {
     static final String URL_BY_SOURCE = "/rest_newsBySource/";
 
 
-    public RssBean[] findNews(String txt){
-      return restTemplate.getForObject(BASE_URL +URL_FIND_NEWS + txt, RssBean[].class);
+    public ArrayList<RssBean> findNews(String txt){
+      return new ArrayList<RssBean>(Arrays.asList(restTemplate.getForObject(BASE_URL +URL_FIND_NEWS + txt, RssBean[].class)));
     }
-    public RssBean[] findAll(){
-        return restTemplate.getForObject(BASE_URL+URL_ALL_NEWS, RssBean[].class);
+    public ArrayList<RssBean> findAll(){
+        return new ArrayList<RssBean>(Arrays.asList(restTemplate.getForObject(BASE_URL+URL_ALL_NEWS, RssBean[].class)));
     }
     public RssBean[] findByRating(String rating){
         return restTemplate.getForObject(BASE_URL+URL_RATING+rating, RssBean[].class);
@@ -46,6 +48,11 @@ public class NewsService {
     public RssBean[] findBySourceAndRating (String source,String rating) {
         return restTemplate.getForObject(BASE_URL+URL_BY_SOURCE + source, RssBean[].class);
     }
-
+    public RssBean[] find(){
+        return restTemplate.getForObject(BASE_URL+URL_ALL_NEWS,RssBean[].class);
+    }
+    public RssBean[] findNew(String txt){
+        return restTemplate.getForObject(BASE_URL +URL_FIND_NEWS + txt, RssBean[].class);
+    }
 
 }

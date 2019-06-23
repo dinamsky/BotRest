@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
@@ -31,6 +33,12 @@ import java.util.List;
 @Component
 public class NewsBot extends TelegramLongPollingBot {
     private static final Logger logger = LoggerFactory.getLogger(NewsBot.class);
+    final private String HELP = "Помощь";
+    final private String FIND = "Искать новости";
+    final private String BACK = "⬅️ ";
+    final private String NEXT = " ➡️";
+    final private String INDEX_OUT_OF_RANGE ="ВСЁ";
+    final private String ALL = "Последние новости";
 
 @Autowired
     NewsService newsService;
@@ -52,46 +60,175 @@ public class NewsBot extends TelegramLongPollingBot {
         return username;
     }
 
+    private ArrayList<RssBean> rssBeans;
+
+    private RssBean[] rssBean;
+
+
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
             Message msg = update.getMessage();
             String txt = msg.getText();
-            if (txt.equals("/start")) {
-                sendMsg(msg, "Hello, world! This is Fake News bot!");
-            }
-            if (txt.equals("/info")) {
-                this.sendMsg(msg, "Soon here'll be some interesting service! for more info you can go direct on http://fakenewsbot.online");
-            }
-            if (txt.equals("/news")) {
-                 for (RssBean text : newsService.findAll()) {
+            if(txt.equals("/start")){
+                SendMessage sendMessagerequest = new SendMessage();
+                sendMessagerequest.setChatId(msg.getChatId().toString());
+                /*
+                 * we just add the first link from our array
+                 *
+                 * We use markdown to embedd the image
+                 */
+                sendMessagerequest.setText("Привет, Я новостной бот!");
+                sendMessagerequest.enableMarkdown(true);
 
-                    this.sendMsg(msg, text.toString());
+                sendMessagerequest.setReplyMarkup(this.getButtonsView(-1,-1));
+
+
+                try {
+                    execute(sendMessagerequest);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
                 }
-                ;
-
-
             }
+            rssBean = newsService.findNew(txt);
+            SendMessage sendMessagerequest = new SendMessage();
+            sendMessagerequest.setChatId(msg.getChatId().toString());
+            /*
+             * we just add the first link from our array
+             *
+             * We use markdown to embedd the image
+             */
+            sendMessagerequest.setText(rssBeans.get(0).toString());
+            sendMessagerequest.enableMarkdown(true);
 
-            if (txt.equals("/help")) {
-                sendMsg(msg, "Send news to read all news");
-            }
-            for (RssBean text : newsService.findNews(txt)) {
-
-                this.sendMsg(msg, text.toString());
-            }
-            ;
+            sendMessagerequest.setReplyMarkup(this.getButtonsView(-1,-1));
 
 
-        } else if (update.hasCallbackQuery()) {
-            CallbackQuery callbackQuery = update.getCallbackQuery();
             try {
-                this.sendAnswerCallbackQuery("Works callback", false, callbackQuery);
+                execute(sendMessagerequest);
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
         }
+        else if(update.hasCallbackQuery()){
+            CallbackQuery callbackquery = update.getCallbackQuery();
+            String[] data = callbackquery.getData().split(":");
+            int index = Integer.parseInt(data[2]);
 
+            if(data[0].equals("news")){
+
+                InlineKeyboardMarkup markup = null;
+
+                if(data[1].equals("back")){
+                    markup = this.getButtonsView(Integer.parseInt(data[2]), 1);
+                    if(index > 0){
+                        index--;
+                    }
+                }else if(data[1].equals("next")){
+                    markup = this.getButtonsView(Integer.parseInt(data[2]), 2);
+                    if(index < rssBean.length-1){
+                        index++;
+                    }
+                }else if(data[1].equals("find")){
+
+                    try {
+                        this.sendAnswerCallbackQuery("Введите текст", false, callbackquery);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else if(data[1].equals("all")){
+
+                    rssBean = newsService.find();
+                    try {
+                        this.sendAnswerCallbackQuery(rssBean[0].toString(), false, callbackquery);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if(markup == null){
+                    try {
+                        this.sendAnswerCallbackQuery(INDEX_OUT_OF_RANGE, false, callbackquery);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                }else{
+
+                    EditMessageText editMarkup = new EditMessageText();
+                    editMarkup.setChatId(callbackquery.getMessage().getChatId().toString());
+                    editMarkup.setInlineMessageId(callbackquery.getInlineMessageId());
+                    editMarkup.setText("[​](" + rssBean[index].toString() + ")");
+                    editMarkup.enableMarkdown(true);
+                    editMarkup.setMessageId(callbackquery.getMessage().getMessageId());
+                    editMarkup.setReplyMarkup(markup);
+                    try {
+                        execute(editMarkup);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+
+
+            }
+        }
+
+
+
+    }
+
+    private InlineKeyboardMarkup getButtonsView(int index,int action) {
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+
+        if(action == 1 && index > 0){
+            index--;
+        }
+        else if((action == 1 && index == 0)){
+            return null;
+        }
+        else if(action == 2 && index >= rssBeans.size()-1){
+            return null;
+        }
+        else if(action == 2){
+            index++;
+        }
+        else if(action == -1){
+            List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+            List<InlineKeyboardButton> rowInline = new ArrayList<>();
+            List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+            rowInline.add(new InlineKeyboardButton().setText(ALL).setCallbackData("news:all:" +index));
+            rowInline2.add(new InlineKeyboardButton().setText(FIND).setCallbackData("news:find"+index));
+            rowsInline.add(rowInline);
+            rowsInline.add(rowInline2);
+            markupInline.setKeyboard(rowsInline);
+
+            return markupInline;
+        }
+
+
+
+
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        List<InlineKeyboardButton> rowInline = new ArrayList<>();
+
+        List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+        rowInline2.add(new InlineKeyboardButton().setText(BACK).setCallbackData("news:back"+index));
+        rowInline2.add(new InlineKeyboardButton().setText(NEXT).setCallbackData("news:next"+index));
+
+
+
+
+
+        rowsInline.add(rowInline);
+
+        rowsInline.add(rowInline2);
+
+        markupInline.setKeyboard(rowsInline);
+
+        return markupInline;
 
     }
 
@@ -104,7 +241,7 @@ public class NewsBot extends TelegramLongPollingBot {
 
         SendMessage s = new SendMessage();
         s.enableMarkdown(true);
-        this.setInline(s);
+
         s.setChatId(msg.getChatId());
         s.setText(text);
         try {
@@ -123,42 +260,7 @@ public class NewsBot extends TelegramLongPollingBot {
         answerCallbackQuery.setText(text);
         execute(answerCallbackQuery);
     }
-    public synchronized void setButtons(SendMessage sendMessage) {
-        // Создаем клавиуатуру
-        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-        sendMessage.setReplyMarkup(replyKeyboardMarkup);
-        replyKeyboardMarkup.setSelective(true);
-        replyKeyboardMarkup.setResizeKeyboard(true);
-        replyKeyboardMarkup.setOneTimeKeyboard(false);
 
-        // Создаем список строк клавиатуры
-        List<KeyboardRow> keyboard = new ArrayList<>();
-
-        // Первая строчка клавиатуры
-        KeyboardRow keyboardFirstRow = new KeyboardRow();
-        // Добавляем кнопки в первую строчку клавиатуры
-        keyboardFirstRow.add(new KeyboardButton("Поиск"));
-
-        // Вторая строчка клавиатуры
-        KeyboardRow keyboardSecondRow = new KeyboardRow();
-        // Добавляем кнопки во вторую строчку клавиатуры
-        keyboardSecondRow.add(new KeyboardButton("Помощь"));
-
-        // Добавляем все строчки клавиатуры в список
-        keyboard.add(keyboardFirstRow);
-        keyboard.add(keyboardSecondRow);
-        // и устанваливаем этот список нашей клавиатуре
-        replyKeyboardMarkup.setKeyboard(keyboard);
-    }
-    private void setInline(SendMessage sendMessage) {
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        List<InlineKeyboardButton> buttons1 = new ArrayList<>();
-        buttons1.add(new InlineKeyboardButton().setText("Кнопка").setCallbackData(String.valueOf(17)));
-        buttons.add(buttons1);
-
-        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
-        markupKeyboard.setKeyboard(buttons);
-    }
 
 }
 
