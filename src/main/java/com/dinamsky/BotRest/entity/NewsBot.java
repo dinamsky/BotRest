@@ -1,5 +1,6 @@
 package com.dinamsky.BotRest.entity;
 
+import com.dinamsky.BotRest.service.NewsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +30,10 @@ import java.util.List;
 @RestController
 @Component
 public class NewsBot extends TelegramLongPollingBot {
-
     private static final Logger logger = LoggerFactory.getLogger(NewsBot.class);
-    static final String URL_ALL_NEWS = "http://localhost:8080/rest_allNews";
-    static final String URL_FIND_NEWS = "http://localhost:8080/rest_findNews/";
-    @Autowired
-    RestTemplate restTemplate;
-    @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder.build();
-    }
+
+@Autowired
+    NewsService newsService;
 
 
     @Value("${bot.token}")
@@ -69,12 +64,7 @@ public class NewsBot extends TelegramLongPollingBot {
                 this.sendMsg(msg, "Soon here'll be some interesting service! for more info you can go direct on http://fakenewsbot.online");
             }
             if (txt.equals("/news")) {
-
-                RssBean[] list = restTemplate.getForObject(URL_ALL_NEWS, RssBean[].class);
-                RssBean textSent = null;
-                ;
-
-                for (RssBean text : list) {
+                 for (RssBean text : newsService.findAll()) {
 
                     this.sendMsg(msg, text.toString());
                 }
@@ -86,10 +76,7 @@ public class NewsBot extends TelegramLongPollingBot {
             if (txt.equals("/help")) {
                 sendMsg(msg, "Send news to read all news");
             }
-            RssBean[] list = restTemplate.getForObject(URL_FIND_NEWS + txt, RssBean[].class);
-            RssBean textSent;
-            ;
-            for (RssBean text : list) {
+            for (RssBean text : newsService.findNews(txt)) {
 
                 this.sendMsg(msg, text.toString());
             }
@@ -104,6 +91,8 @@ public class NewsBot extends TelegramLongPollingBot {
                 e.printStackTrace();
             }
         }
+
+
     }
 
     @PostConstruct
