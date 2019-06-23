@@ -3,14 +3,23 @@ package com.dinamsky.BotRest.entity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.annotation.PostConstruct;
-
+import java.util.ArrayList;
+import java.util.List;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -45,6 +54,7 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+
         Message msg = update.getMessage();
         String txt = msg.getText();
         if (txt.equals("/start")) {
@@ -56,10 +66,11 @@ public class Bot extends TelegramLongPollingBot {
 
         if (txt.equals("/help")) {
             sendMsg(msg, "I dont know what i can.");
-        }
+        }}
 
 
-    }
+
+
 
     @PostConstruct
     public void start() {
@@ -68,6 +79,7 @@ public class Bot extends TelegramLongPollingBot {
 
     private void sendMsg(Message msg, String text) {
         SendMessage s = new SendMessage();
+        s.enableMarkdown(true);
         s.setChatId(msg.getChatId());
         s.setText(text);
         try {
@@ -77,6 +89,11 @@ public class Bot extends TelegramLongPollingBot {
             logger.error("Failed to send message \"{}\" to {} due to error: {}", text,  e.getMessage());
         }
     }
+
+
+
+
+
 
 }
 

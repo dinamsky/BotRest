@@ -1,15 +1,29 @@
 package com.dinamsky.BotRest.entity;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+
 import java.net.URL;
 import java.time.LocalDateTime;
 
+
+
 public class RssBean {
+
+
+
+
     private int id;
 
+
     private String title;
+
     private String description;
     private URL url;
+    private int rating;
+    private String source;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime newsDate;
 
     public String getTitle() {
@@ -49,8 +63,27 @@ public class RssBean {
         this.url = url;
     }
 
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
     @Override
     public String toString() {
-        return title + '\''  + description + '\'' + newsDate ;
+        return title +
+                "\n"+description  +
+                "\n" + url +
+                "\n" + newsDate ;
     }
 }
