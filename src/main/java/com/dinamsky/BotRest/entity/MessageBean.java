@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 
 
-public class RssBean {
+public class MessageBean {
 
 
 

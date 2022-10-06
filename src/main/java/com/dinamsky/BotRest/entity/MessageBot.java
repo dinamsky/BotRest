@@ -28,11 +28,11 @@ import java.util.List;
 
 @RestController
 @Component
-public class NewsBot extends TelegramLongPollingBot {
+public class MessageBot extends TelegramLongPollingBot {
 
-    private static final Logger logger = LoggerFactory.getLogger(NewsBot.class);
-    static final String URL_ALL_NEWS = "http://localhost:8080/rest_allNews";
-    static final String URL_FIND_NEWS = "http://localhost:8080/rest_findNews/";
+    private static final Logger logger = LoggerFactory.getLogger(MessageBot.class);
+    static final String URL_LAST_MESSAGES = "http://localhost:8080/rest_lastMessages";
+    static final String URL_FIND_USERS = "http://localhost:8080/rest_findUsers/";
     @Autowired
     RestTemplate restTemplate;
     @Bean
@@ -63,18 +63,18 @@ public class NewsBot extends TelegramLongPollingBot {
             Message msg = update.getMessage();
             String txt = msg.getText();
             if (txt.equals("/start")) {
-                sendMsg(msg, "Hello, world! This is Fake News bot!");
+                sendMsg(msg, "Hello! This is PurpleBeeBot!");
             }
             if (txt.equals("/info")) {
-                this.sendMsg(msg, "Soon here'll be some interesting service! for more info you can go direct on http://fakenewsbot.online");
+                this.sendMsg(msg, "Soon here'll be some interesting service! for more info you can go direct on http://purplebee.online");
             }
-            if (txt.equals("/news")) {
+            if (txt.equals("/messages")) {
 
-                RssBean[] list = restTemplate.getForObject(URL_ALL_NEWS, RssBean[].class);
-                RssBean textSent = null;
+                MessageBean[] list = restTemplate.getForObject(URL_LAST_MESSAGES, MessageBean[].class);
+                MessageBean textSent = null;
                 ;
 
-                for (RssBean text : list) {
+                for (MessageBean text : list) {
 
                     this.sendMsg(msg, text.toString());
                 }
@@ -84,12 +84,12 @@ public class NewsBot extends TelegramLongPollingBot {
             }
 
             if (txt.equals("/help")) {
-                sendMsg(msg, "Send news to read all news");
+                sendMsg(msg, "Send message to read last parsed messages");
             }
-            RssBean[] list = restTemplate.getForObject(URL_FIND_NEWS + txt, RssBean[].class);
-            RssBean textSent;
+            MessageBean[] list = restTemplate.getForObject(URL_FIND_USERS + txt, MessageBean[].class);
+            MessageBean textSent;
             ;
-            for (RssBean text : list) {
+            for (MessageBean text : list) {
 
                 this.sendMsg(msg, text.toString());
             }

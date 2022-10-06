@@ -61,7 +61,7 @@ public class Bot extends TelegramLongPollingBot {
             sendMsg(msg, "Hello, world! This is "+username+" bot!");
         }
         if (txt.equals("/info")) {
-            this.sendMsg(msg, "Soon here'll be some interesting service! for more info you can go direct on http://fakenewsbot.online");
+            this.sendMsg(msg, "Soon here'll be some interesting service! for more info you can go direct on http://purplebee.online");
         }
 
         if (txt.equals("/help")) {
