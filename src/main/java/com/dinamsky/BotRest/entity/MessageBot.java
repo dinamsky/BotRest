@@ -84,7 +84,7 @@ public class MessageBot extends TelegramLongPollingBot {
             }
 
             if (txt.equals("/help")) {
-                sendMsg(msg, "Send message to read last parsed messages");
+                sendMsg(msg, "Send query to read last parsed messages");
             }
             MessageBean[] list = restTemplate.getForObject(URL_FIND_USERS + "?query=" + txt, MessageBean[].class);
             MessageBean textSent;
