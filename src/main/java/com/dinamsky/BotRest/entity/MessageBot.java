@@ -32,7 +32,7 @@ public class MessageBot extends TelegramLongPollingBot {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageBot.class);
     static final String URL_LAST_MESSAGES = "http://localhost:8080/rest_lastMessages";
-    static final String URL_FIND_USERS = "https://purplebee.ru/api/getmessage";
+    static final String URL_FIND_USERS = "https://purplebee.ru/api/getmessage/?query=";
     @Autowired
     RestTemplate restTemplate;
     @Bean
@@ -86,7 +86,7 @@ public class MessageBot extends TelegramLongPollingBot {
             if (txt.equals("/help")) {
                 sendMsg(msg, "Send query to read last parsed messages");
             }
-            MessageBean[] list = restTemplate.getForObject(URL_FIND_USERS + "?query=" + txt, MessageBean[].class);
+            MessageBean[] list = restTemplate.getForObject(URL_FIND_USERS  + txt, MessageBean[].class);
             MessageBean textSent;
             ;
             for (MessageBean text : list) {

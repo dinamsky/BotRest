@@ -16,27 +16,40 @@ public class MessageBean {
     private int id;
 
 
-    private String title;
+    private String user_id;
 
-    private String description;
-    private URL url;
-    private int rating;
-    private String source;
+    private String username;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-    private LocalDateTime newsDate;
+    private String chat_id;
 
-    public String getTitle() {
-        return title;
+    private String text;
+
+//    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+//    private LocalDateTime newsDate;
+
+    public String getUser_id() {
+        return user_id;
     }
-    public void setTitle(String title) {
-        this.title = title;
+    public String getUsername() {
+        return username;
     }
-    public String getDescription() {
-        return description;
+    public String getText() {
+        return text;
     }
-    public void setDescription(String description) {
-        this.description = description;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    public void setUser_id(String user_id) {
+        this.user_id = user_id;
+    }
+    public void setText(String text) {
+        this.text = text;
+    }
+    public String getChat_id() {
+        return chat_id;
+    }
+    public void setChat_id(String description) {
+        this.chat_id = chat_id;
     }
 
     public int getId() {
@@ -47,43 +60,41 @@ public class MessageBean {
         this.id = id;
     }
 
-    public LocalDateTime getNewsDate() {
-        return newsDate;
-    }
+//    public LocalDateTime getNewsDate() {
+//        return newsDate;
+//    }
 
-    public void setNewsDate(LocalDateTime newsDate) {
-        this.newsDate = newsDate;
-    }
+//    public void setNewsDate(LocalDateTime newsDate) {
+//        this.newsDate = newsDate;
+//    }
 
-    public URL getUrl() {
-        return url;
-    }
+//    public URL getUrl() {
+//        return url;
+//    }
 
-    public void setUrl(URL url) {
-        this.url = url;
-    }
+//    public void setUrl(URL url) {
+//        this.url = url;
+//    }
 
-    public int getRating() {
-        return rating;
-    }
+//    public int getRating() {
+//        return rating;
+//    }
 
-    public void setRating(int rating) {
-        this.rating = rating;
-    }
+//    public void setRating(int rating) {
+//        this.rating = rating;
+//    }
 
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
+//    public String getSource() {
+//        return source;
+//    }
+//
+//    public void setSource(String source) {
+//        this.source = source;
+//    }
 
     @Override
     public String toString() {
-        return title +
-                "\n"+description  +
-                "\n" + url +
-                "\n" + newsDate ;
+        return username +
+                "\n"+text ;
     }
 }
